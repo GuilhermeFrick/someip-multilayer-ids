@@ -1,0 +1,248 @@
+
+Description of Dataset
+The data set simulates the traffic in the electrical and electronic architecture shown in the figure below. The architecture includes: ADAS domain, HPC, body and dynamic domain and GUI.
+GUI
+HPC
+ADAS
+Body/Dynamic domain
+GUI
+HPC
+ADAS
+Body/Dynamic domain
+HPC domain (192.168.1.2):
+Function: 
+Run the ACC algorithm, calculate the throttle opening, brake fluid pressure, and the relative speed of the front vehicle through the input of the camera information of TIS1 and TIS2 in the ADAS domain and the vehicle speed, heading angle, and longitudinal offset information of the vehicle body input in the power domain and collision time parameters.
+The input and output parameters of the entire algorithm are carried out through the service subscription and publication of the SOME/IP protocol.
+ADAS domain (192.168.1.1):
+Function: 
+Send the data processed by the camera to HPC, including the distance from TIS1 and TIS2 to the vehicle in front, Doppler speed and angle difference.
+The transmission of parameters is carried out through the service subscription and publication of the SOME/IP protocol.
+Body and dynamic domain (192.168.1.3):
+Function: 
+Send the kinematics information of the vehicle itself to the HPC platform, and receive the brake and accelerator control signals sent back by the HPC platform if you subscribe to the ACC service.
+The transmission of parameters is carried out through the service subscription and publication of the SOME/IP protocol.
+GUI (192.168.1.4):
+Function: 
+Simulate the function of the GUI, trigger the subsequent service subscription and release process of the overall system by checking the ACC service, and receive the information such as the relative speed of the vehicle in front and the collision event warning calculated by HPC for reference after subscribing to the ACC service show.
+System service definition table:
+Service ID
+Service name
+publish node
+subscribe node
+0x1472
+ACC service
+HPC
+GUI/ Body/ Dynamic
+0x2759
+ADAS service
+ADAS
+HPC
+0x3612
+Vehicle information service
+Body/Dynamic
+HPC
+0x1588
+Air conditioning control RPC
+GUI
+HPC
+0x1472 service definition table
+Major version
+1
+Minor version
+1
+TTL
+60s
+Option Type
+IPV4 Endpoint
+Method ID(0x11)
+Type
+Event
+Des_Port/Source_Port
+40007/40005
+Des_IP/Source_IP
+192.168.1.3/192.168.1.2
+Cycle
+10ms
+Payload_len
+8*6（6 double-precision floating-point number type data）
+Valid_Payload_len
+8*2
+Data1
+BrakePres
+Data2
+Throttle
+Method ID(0x12)
+Type
+Event
+Des_Port/Source_Port
+40013/40012
+Des_IP/Source_IP
+192.168.1.4/192.168.1.2
+Cycle
+10ms
+Payload_len
+8*6（6 double-precision floating-point number type data）
+Valid_Payload_len
+8*2
+Data1
+leadcar_speed
+Data2
+HWT
+0x2759 service definition table
+Major version
+1
+Minor version
+1
+TTL
+60s
+Option Type
+IPV4 Endpoint
+Method ID(0x10)
+Type
+Event
+Des_Port/Source_Port
+40005/40004
+Des_IP/Source_IP
+192.168.1.2/192.168.1.1
+Cycle
+40ms
+Payload_len
+8*6（6 double-precision floating-point number type data）
+Valid_Payload_len
+8*6
+Data1
+Range_1
+Data2
+DopplerV_1
+Data3
+Degree_1
+Data4
+Range_2
+Data5
+DopplerV_2
+Data6
+Degree_2
+0x3612 service definition table
+Major version
+1
+Minor version
+1
+TTL
+60s
+Option Type
+IPV4 Endpoint
+Method ID(0x09)
+Type
+Event
+Des_Port/Source_Port
+40005/40007
+Des_IP/Source_IP
+192.168.1.2/192.168.1.3
+Cycle
+10ms
+Payload_len
+8*6（6 double-precision floating-point number type data）
+Valid_Payload_len
+8*3
+Data1
+V
+Data2
+yraw
+Data3
+roty
+0x1588 service definition table(used only in rule-based detection)
+Major version
+1
+Minor version
+1
+TTL
+60s
+Option Type
+IPV4 Endpoint
+Method ID(0x08)
+Type
+RPC-RR
+Des_Port/Source_Port
+Des_IP/Source_IP
+192.168.1.4/192.168.1.2
+Cycle
+/
+Payload_len
+1
+Valid_Payload_len
+1
+Data1
+Temperature of air conditioning
+Method ID(0x07)
+Type
+RPC-ff
+Des_Port/Source_Port
+Des_IP/Source_IP
+192.168.1.4/192.168.1.2
+Cycle
+/
+Payload_len
+1
+Valid_Payload_len
+1
+Data1
+The value of air conditioning
+The data set is divided into two parts, which are used for AI-based detection and rule-based detection respectively.
+For AI-based detection:
+The data set contains SOME/IP protocol header and payload.
+Protocol header includes as the following figure, defined by the SOME/IP Spec:
+Figure 1 SOME/IP header
+The payload is defined according to different service IDs and method IDs as shown in the table:
+Table
+Message ID
+Number of signal
+Type
+Signal description
+0x14720011
+2
+Event
+Brake pressure and throttle opening
+0x14720012
+2
+Event
+Preceding vehicle speed and collision warning time
+0x27590010
+6
+Event
+Distance, doppler velocity and degree relative to preceding vehicle from sensor 1 and sensor 2.
+0x36120009
+3
+Event
+Velocity, heading and y-axis rotation angle of the vehicle
+0x15880008
+1
+Request-Response-RPC
+Set air conditioning temperature
+0x15880007
+1
+Fire & Forget-RPC
+Turn on the air conditioning
+The data set is divided into 12 CSV files according to the scene and whether there is an attack. The scene is defined in Prescan, and is divided into 4 scenes according to the vehicle's segmental acceleration, initial speed, and road type:
+Scenario 1: The leading vehicle is driving in a straight line at a constant speed, and the ACC data of the following vehicle is obtained by Simulink simulation.
+Scenario 2: The leading vehicle is driving in a straight line with different segmental accelerations, and the ACC data of the following vehicle is obtained by Simulink simulation.
+Scenario 3: The road condition is congested, the leading vehicle keeps starting and stopping while driving at a lower speed, and the ACC data of the following vehicle is obtained by Simulink simulation.
+Scenario 4: The leading vehicle is driving on a straight road and a curve at different speeds and accelerations, and the ACC data of the following vehicle is obtained by Simulink simulation.
+Attack:
+The target of AI-based detection is the payload, so the attacks all occur in the payload , which are tampering (label defined 0) and replay (label defined 2). The label for normal data is 1. Replay attacks are divided into single replay and zone replay. Tampering attacks are divided into linear tampering, random tampering and fixed value tampering. These attacks are implemented by python scripts.
+For Rule-based detection:
+The data set is divided into two parts: SOME/IP normal communication and SOME/IP service discovery.
+The dataset of SOME/IP normal communication is similar to the dataset of AI-based detection. The difference is that its payload is not important, because the rule-based judgment is only performed on the header. Compared with Figure 1, the data set of SOME/IP service discovery adds more fields such as service entry and option entry as shown in Figure 2, which are defined by SOME/IP-SD Spec.
+Figure 2: added context to SOME/IP-SD
+Attack:
+All attacks occur in the header. Attacks are mainly divided into Fuzzy, DoS and abnormal communication process. Fuzzy refers to traversing the values of each field in the header of SOME/IP. The DoS is mainly implemented by reducing the period of normal packets. The abnormal communication process mainly generates error feedback through the return code field, or loses the corresponding response or request. The proportion of normal and attack data in the data set is shown in the table.
+Table
+Total
+Normal
+Fuzzy
+DOS
+Abnormal communication process
+144574
+55010
+43867
+12188
+33509

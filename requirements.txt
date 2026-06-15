@@ -1,0 +1,21 @@
+# Núcleo
+numpy
+pandas
+scipy
+
+# Deep learning (multi-GRU) — escolher conforme seu setup CUDA
+torch
+
+# ML / métricas
+scikit-learn
+
+# Otimização Bayesiana de hiperparâmetros (escolher um)
+optuna
+# scikit-optimize
+
+# Visualização
+matplotlib
+seaborn
+
+# Notebooks
+jupyter

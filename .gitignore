@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# Dados gerados e pesos (manter apenas data/raw versionável à parte se desejar)
+data/processed/
+models/*.pt
+models/*.pth
+results/*.png
+results/*.csv
+
+# Arquivos temporários do Office
+~$*
+
+# CSVs do dataset: versionados via Git LFS (ver .gitattributes), não ignorados.
+# Artefato redundante (zip do dataset = mesmos CSVs): não versionar.
+references/*.zip
+
+# Lock transitório do harness
+.claude/scheduled_tasks.lock
+
+# OS
+Thumbs.db
+.DS_Store
