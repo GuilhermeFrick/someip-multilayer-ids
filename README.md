@@ -63,5 +63,6 @@ Já está em `data/raw/`. Detalhes em [docs/descricao-dataset.md](docs/descricao
 - [x] Camada 1 — motor de regras (Fuzzy sólido; Abnormal c/ máquina de estados; DoS limitado — ver [docs/resultados-fase2.md](docs/resultados-fase2.md))
 - [x] Camada 2 — multi-GRU: **94,61%** accuracy, replay recall 91,5% (arquitetura/seqs idênticas ao artigo; gap p/ 99,78% = hiperparâmetros/épocas — ver [docs/resultados-fase3.md](docs/resultados-fase3.md))
 - [x] Avaliação (Accuracy/Precision/Recall/F1 + matriz de confusão)
-- [ ] Otimização Bayesiana + baseline single-GRU (refinamento p/ fechar o gap)
+- [x] Baseline single-GRU: **97,66%** (reproduz o artigo 97,40%) e **supera o multi-GRU (94,92%)** — a tese central do artigo NÃO se reproduz; ver [docs/resultados-fase3.md](docs/resultados-fase3.md)
+- [ ] Otimização Bayesiana própria (testar se reabilita a vantagem do multi-GRU)
 - [ ] Análise de desbalanceamento (ratios 40%/20%/1%)

@@ -22,11 +22,22 @@ from torch.utils.data import DataLoader, TensorDataset
 from ..data import preprocess
 from ..data.load import LABEL_TAMPER, LABEL_NORMAL, LABEL_REPLAY
 from .multi_gru import MultiGRU, count_parameters
+from .single_gru import SingleGRU
 
 ROOT = Path(__file__).resolve().parents[2]
 
-# Hiperparâmetros — Tabela 9 do artigo (multi-GRU)
+# Hiperparâmetros — Tabela 9 do artigo
 HP_MULTI = dict(hscale=5, lr=0.0089630704, beta1=0.933792409392, beta2=0.952802490181)
+HP_SINGLE = dict(hscale=31, lr=0.0043259137, beta1=0.939844012507, beta2=0.943045819607)
+HP_DEFAULTS = {"multi": HP_MULTI, "single": HP_SINGLE}
+
+
+def build_model(model_type: str, hscale: int):
+    if model_type == "multi":
+        return MultiGRU(hscale=hscale)
+    if model_type == "single":
+        return SingleGRU(hscale=hscale)
+    raise ValueError(f"model_type inválido: {model_type!r} (use 'multi' ou 'single')")
 
 # Mapeia o label original {0,1,2} -> índice de classe contíguo {0,1,2} p/ cross-entropy.
 # Mantemos a mesma numeração (já é 0..2), mas deixamos explícito p/ legibilidade.
@@ -75,11 +86,11 @@ def evaluate(model, loader, device) -> dict:
 
 
 def run(scenarios=("bend",), epochs: int = 30, batch_size: int = 128,
-        hp: dict | None = None, seed: int = 42, save_as: str | None = None,
-        verbose: bool = True) -> dict:
+        model_type: str = "multi", hp: dict | None = None, seed: int = 42,
+        save_as: str | None = None, verbose: bool = True) -> dict:
     torch.manual_seed(seed)
     np.random.seed(seed)
-    hp = {**HP_MULTI, **(hp or {})}
+    hp = {**HP_DEFAULTS[model_type], **(hp or {})}
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if verbose:
@@ -89,9 +100,9 @@ def run(scenarios=("bend",), epochs: int = 30, batch_size: int = 128,
         print("     ", ds.summary().replace("\n", "\n      "))
 
     train_loader, test_loader = _loaders(ds, batch_size)
-    model = MultiGRU(hscale=hp["hscale"]).to(device)
+    model = build_model(model_type, hp["hscale"]).to(device)
     if verbose:
-        print(f"[2/3] Treinando multi-GRU ({count_parameters(model)} parâmetros) "
+        print(f"[2/3] Treinando {model_type}-GRU ({count_parameters(model)} parâmetros) "
               f"em {device} por {epochs} épocas ...")
 
     opt = torch.optim.Adam(model.parameters(), lr=hp["lr"], betas=(hp["beta1"], hp["beta2"]))
