@@ -129,6 +129,33 @@ Este é um resultado de reprodução **relevante**: a contribuição-título do 
 single-GRU, mais simples, reproduz e até supera. Vale destacar isso ao avaliar a relevância
 do trabalho.
 
-## Refinamentos opcionais
-- [ ] Otimização Bayesiana própria (`optuna`) — testar se reabilita a vantagem do multi-GRU.
-- [ ] Varrer lr/scheduler do multi-GRU (a oscilação sugere lr alto demais).
+## Fase 3c — Otimização Bayesiana própria (`src/models/optimize.py`)
+
+Busca Optuna (20 trials × 20 épocas, subamostra 25%, poda) nas faixas da Tabela 5, depois
+treino do melhor config em 120 épocas no dataset completo.
+
+**Melhor config:** hscale=5, lr=0,00893, β1=0,973, β2=0,960 — quase idêntico à Tabela 9,
+exceto **β1 (0,973 vs 0,934)**.
+
+| Modelo | Accuracy | Replay recall | Loss final |
+|--------|---------:|--------------:|-----------:|
+| single-GRU | 97,66% | 94,77% | 0,059 |
+| multi-GRU (Tabela 9 exata) | 94,92% | 88,89% | 0,119 |
+| **multi-GRU (Bayes-otimizado)** | **96,79%** | 94,79% | 0,079 |
+
+### Achados
+1. A busca **redescobriu a região de hiperparâmetros do artigo** (hscale=5, lr~0,009) —
+   confirma que a Tabela 9 está num bom ótimo.
+2. Uma mudança pequena (**β1 0,934→0,973**) fez o multi-GRU saltar **94,9% → 96,79%**: a loss
+   quebrou o platô de 0,12 e foi a 0,079. O modelo é **muito sensível ao momento do Adam**.
+3. **Alta variância entre rodadas:** com mesmos hscale/lr, o multi-GRU caiu em 94,9% ou 96,8%
+   dependendo do β e da dinâmica de treino (escapar ou não do platô de loss 0,12).
+
+### Conclusão refinada (substitui a anterior)
+Mesmo **otimizado**, o multi-GRU (96,79%) apenas **empata** com o single-GRU (97,66%) — não o
+supera. A vantagem grande alegada no artigo (99,78 vs 97,40) **não se reproduz**. A história
+real não é "multi ≫ single", e sim **alta sensibilidade a hiperparâmetros/seed e variância**:
+os dois modelos ficam na faixa 95–98%, com o single-GRU consistentemente no topo.
+
+> Para a dissertação: a contribuição-título do artigo não é robusta. Recomenda-se reportar
+> média ± desvio sobre múltiplas seeds para ambos os modelos (próximo passo natural).
