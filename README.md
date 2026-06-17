@@ -14,6 +14,14 @@ O artigo propõe um IDS de **duas camadas** para redes veiculares baseadas em SO
 > reimplementa as duas camadas a partir da descrição do artigo. Ver
 > [docs/plano-reproducao.md](docs/plano-reproducao.md).
 
+## ▶️ Reproduzir no Google Colab (GPU)
+Abra **[notebooks/02-reproducao-colab.ipynb](notebooks/02-reproducao-colab.ipynb)** no Colab
+com GPU. Ele clona este repositório (com os dados via Git LFS), roda a **Camada 1 (regras)**,
+treina **multi-GRU e single-GRU** e mostra a comparação — permitindo verificar que o
+**single-GRU iguala/supera o multi-GRU** (contrariando o artigo). Há também a otimização
+Bayesiana opcional. O notebook [01-exploracao-preprocessamento.ipynb](notebooks/01-exploracao-preprocessamento.ipynb)
+cobre a carga e o pré-processamento dos dados.
+
 ## Estrutura do projeto
 
 ```
